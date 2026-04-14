@@ -1,3 +1,10 @@
+"""
+METAR Reader — Flask web application.
+
+Users enter an ICAO airport code; the app fetches the latest METAR
+from aviationweather.gov and renders a plain-English weather report.
+"""
+
 import urllib.request
 import urllib.error
 from flask import Flask, render_template, request
@@ -5,16 +12,18 @@ from metar_parser import parse_metar
 
 app = Flask(__name__)
 
+# Aviation Weather Center public METAR endpoint — substitute airport code via .format()
 METAR_API = "https://aviationweather.gov/api/data/metar?ids={}"
 
 
 def _first_cover(clouds: list) -> str:
-    """Return the first cloud-cover keyword found, lowercased."""
-    return (clouds[0].lower() if clouds else "")
+    """Return the first cloud-cover description, lowercased, or an empty string."""
+    return clouds[0].lower() if clouds else ""
 
 
 @app.template_global()
 def sky_class(clouds: list) -> str:
+    """Map a parsed cloud list to a CSS class used to style the sky badge."""
     cover = _first_cover(clouds)
     if not cover or "clear" in cover or "no significant" in cover or "no cloud" in cover:
         return "sky-clear"
@@ -31,6 +40,7 @@ def sky_class(clouds: list) -> str:
 
 @app.template_global()
 def sky_icon(clouds: list) -> str:
+    """Return an emoji that represents the dominant sky condition."""
     cover = _first_cover(clouds)
     if not cover or "clear" in cover or "no significant" in cover or "no cloud" in cover:
         return "☀️"
@@ -47,8 +57,15 @@ def sky_icon(clouds: list) -> str:
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    weather    = None
-    error      = None
+    """
+    Home page — search form and weather result.
+
+    GET:  render the empty search form.
+    POST: validate the submitted airport code, fetch the METAR, decode it,
+          and render the result (or an error message on failure).
+    """
+    weather      = None
+    error        = None
     airport_code = ""
 
     if request.method == "POST":
