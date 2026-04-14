@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "members-reader"
+version = "0.1.0"
+description = "Load and query member records from a CSV file."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.9"
+keywords = ["csv", "members", "data"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.scripts]
+members-reader = "members_reader.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/tharunm6/members-reader"
+Issues   = "https://github.com/tharunm6/members-reader/issues"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
